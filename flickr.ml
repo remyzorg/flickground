@@ -13,7 +13,6 @@ open Lwt
 
 
 module Net = struct
-
   let get url =
     Ocsigen_http_client.get_url url >>= begin function
     | {Ocsigen_http_frame.frame_content = Some v } ->
@@ -55,9 +54,7 @@ module Json = struct
     String.(sub data (length json_header) (length data - 1 - length json_header))
         |> Safe.from_string
 
-
-
-  let extract_photos : Yojson.Safe.json -> string list = function
+  let extract_photos = function
     | `Assoc l ->
       begin l
           |> List.assoc "photos"
@@ -72,10 +69,5 @@ module Json = struct
             | _ -> malformed "json"
           ) end
     | _ -> malformed "json"
-
-
-
-
-
 
 end
