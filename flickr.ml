@@ -1,18 +1,11 @@
-
-type error = Malformed_json of string
-exception Error of error
-
-let malformed s = raise (Error (Malformed_json s))
-
+(* flickr.ml *)
 
 let rest = "https://api.flickr.com/services/rest/"
-
 let apikey = "b551afe7603cf01eac70d54262cd07df"
-
-open Lwt
 
 
 module Net = struct
+  open Lwt
   let get_string url =
     Ocsigen_http_client.get_url url >>= begin function
     | {Ocsigen_http_frame.frame_content = Some v } ->
@@ -25,14 +18,11 @@ module Net = struct
     | {Ocsigen_http_frame.frame_content = Some v } ->
       Ocsigen_stream.string_of_stream 100000000 (Ocsigen_stream.get v)
     | _ -> return "" end |> Lwt_main.run
-
-
 end
 
 let mk_rq meth others =
   let req = rest ^ "?api_key=" ^ apikey ^ "&method=" ^ meth ^ "&format=json" ^ others
-  in Format.printf "Request : %s@\n" req;
-  Net.get_string req
+  in Net.get_string req
 
 
 module Method = struct
@@ -58,12 +48,11 @@ module Json = struct
   open Yojson.Basic.Util
 
   let json_header = "jsonFlickrApi("
-
   let pretty = Basic.pretty_to_string
 
   let extract_json data =
-    String.(sub data (length json_header) (length data - 1 - length json_header))
-        |> Basic.from_string
+    Basic.from_string String.(sub data (length json_header)
+              (length data - 1 - length json_header))
 
   let extract_photos json =
     [json]
@@ -85,7 +74,4 @@ module Json = struct
           |> List.mem "Original")
         |> filter_member "source"
         |> filter_string
-
-
-
 end
