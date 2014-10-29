@@ -3,6 +3,7 @@
 
 open Format
 open Set_background
+open Common
 
 let config_dir = Unix.((getpwnam (getlogin ())).pw_dir) ^
   "/.config/flickground"
@@ -46,11 +47,13 @@ let parse_config () =
     in
     step ();
     let lines = List.rev !table in
+    let confs = ref [] in
     ()
+    (* List.iter (fun x -> split) lines *)
 
 
-
-
+let () =
+  List.iter (printf "%s@\n") (splitc '|' "abc|de|fgh")
 
 
 let () = Arg.parse spec set_users msg
