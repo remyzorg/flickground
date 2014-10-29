@@ -13,61 +13,79 @@ open Lwt
 
 
 module Net = struct
-  let get url =
+  let get_string url =
     Ocsigen_http_client.get_url url >>= begin function
     | {Ocsigen_http_frame.frame_content = Some v } ->
-      Ocsigen_stream.string_of_stream 1000000 (Ocsigen_stream.get v)
+      Ocsigen_stream.string_of_stream 100000 (Ocsigen_stream.get v)
     | _ -> return "" end |> Lwt_main.run
 
+
+  let get_bin url =
+    Ocsigen_http_client.get_url url >>= begin function
+    | {Ocsigen_http_frame.frame_content = Some v } ->
+      Ocsigen_stream.string_of_stream 100000000 (Ocsigen_stream.get v)
+    | _ -> return "" end |> Lwt_main.run
+
+
 end
-
-
-
-module Method = struct
-  module People = struct
-    let getPhotos = "flickr.people.getPhotos"
-  end
-end
-
-
 
 let mk_rq meth others =
   let req = rest ^ "?api_key=" ^ apikey ^ "&method=" ^ meth ^ "&format=json" ^ others
   in Format.printf "Request : %s@\n" req;
-  Net.get req
+  Net.get_string req
 
 
-let get_photos user =
-  mk_rq Method.People.getPhotos ("&user_id=" ^ user)
+module Method = struct
+  let flickr = "flickr."
 
+  module People = struct
+    let string  m = flickr ^ "people." ^ m
+    let getPhotos user_id =
+      mk_rq (string "getPhotos") ("&user_id=" ^ user_id ^ "&extra=url_o")
+  end
 
+  module Photos = struct
+    let string m = flickr ^ "photos." ^ m
+    let getSizes photo_id =
+      mk_rq (string "getSizes") ("&photo_id=" ^ photo_id)
+  end
+
+end
 
 
 module Json = struct
   open Yojson
+  open Yojson.Basic.Util
 
   let json_header = "jsonFlickrApi("
 
-  let pretty = Safe.pretty_to_string
+  let pretty = Basic.pretty_to_string
 
   let extract_json data =
     String.(sub data (length json_header) (length data - 1 - length json_header))
-        |> Safe.from_string
+        |> Basic.from_string
 
-  let extract_photos = function
-    | `Assoc l ->
-      begin l
-          |> List.assoc "photos"
-          |> begin function `Assoc photos -> photos | _ -> malformed "json" end
-          |> List.assoc "photo"
-          |> begin function `List l -> l | _ -> malformed "json" end
-          |> List.map (function
-            | `Assoc photo -> begin photo
-                |> List.assoc "id"
-                |> begin function `String s -> s | _ -> malformed "json" end
-              end
-            | _ -> malformed "json"
-          ) end
-    | _ -> malformed "json"
+  let extract_photos json =
+    [json]
+        |> filter_member "photos"
+        |> filter_member "photo"
+        |> flatten
+        |> filter_member "id"
+        |> filter_string
+
+
+  let extract_url json =
+    [json]
+        |> filter_member "sizes"
+        |> filter_member "size"
+        |> flatten
+        |> List.filter (fun x -> [x]
+          |> filter_member "label"
+          |> filter_string
+          |> List.mem "Original")
+        |> filter_member "source"
+        |> filter_string
+
+
 
 end
