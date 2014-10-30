@@ -1,0 +1,16 @@
+OASISFormat: 0.4
+Name:        flickground
+Version:     0.1
+Synopsis:    tool to download pictures from multiple flickr accounts and choose it as
+  background
+Authors:     Remy El Sibaie Besognet
+License:     MIT
+Plugins:     META (0.4), DevFiles (0.4)
+
+Executable flickground
+  Path:			src
+  BuildTools: 		ocamlbuild
+  CompiledObject: 	best
+  MainIs:     		flickground.ml
+  BuildDepends:		lwt, ocsigenserver, re.str, yojson
+  

@@ -4,6 +4,7 @@
 open Format
 open Set_background
 open Common
+module Str = Re_str
 
 let config_dir = Unix.((getpwnam (getlogin ())).pw_dir) ^
   "/.config/flickground"
@@ -35,28 +36,39 @@ let spec = [
 ]
 
 
+
+
 let parse_config () =
   if Sys.file_exists config_file then
     let c = open_in config_file in
-    let table = ref [] in
-    let rec step () =
-      match input_line c with
-      | exception e -> close_in c
-      | s -> table := s :: !table;
-        step ()
+    let table =
+      let rec step l =
+        match input_line c with
+        | exception e -> close_in c; l
+        | s -> step (s :: l)
+      in
+      List.rev (step []);
     in
-    step ();
-    let lines = List.rev !table in
-    let confs = ref [] in
-    ()
-    (* List.iter (fun x -> split) lines *)
+    table
+      |> List.map (split ":")
+      |> List.map (function
+        | n :: v :: [] -> n, v
+        | _ -> "", ""
+      )
+      |> List.iter (function
+        | "users", v -> List.iter set_users (split " " v)
+        | _ -> ()
+
+      )
+
+
 
 
 let () =
-  List.iter (printf "%s@\n") (splitc '|' "abc|de|fgh")
+  Arg.parse spec set_users msg;
+  parse_config ()
 
 
-let () = Arg.parse spec set_users msg
 
 let () =
   if !debug then List.iter print_endline !users;
