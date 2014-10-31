@@ -1,3 +1,8 @@
-S .
-B _build
-PKG re ocsigenserver lwt yojson
+REC
+S src
+B _build/
+B _build/src
+PKG re.str
+PKG ocsigenserver
+PKG lwt
+PKG yojson

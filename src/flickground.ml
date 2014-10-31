@@ -4,6 +4,9 @@
 open Format
 open Set_background
 open Common
+
+
+
 module Str = Re_str
 
 let config_dir = Unix.((getpwnam (getlogin ())).pw_dir) ^
@@ -58,9 +61,7 @@ let parse_config () =
       |> List.iter (function
         | "users", v -> List.iter set_users (split " " v)
         | _ -> ()
-
       )
-
 
 
 
