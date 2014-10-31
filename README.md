@@ -23,3 +23,5 @@ Depandancies
 * ocsigenserver 
 * re.str
 * yojson
+
+* feh `aptitude install feh`
