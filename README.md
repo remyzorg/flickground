@@ -1,7 +1,7 @@
 flickground
 ===========
 
-Mini software to choose a random background picture in a flickr user gallery 
+Mini tool to choose a random background picture in a flickr user gallery 
 
 
 
@@ -16,10 +16,11 @@ users: 48404998@N08
 
 
 
-Depandancies
+Requirements
 ===========
 
-* lwt
+* Ocaml > 4.02.0
+* lwt 
 * ocsigenserver 
 * re.str
 * yojson
