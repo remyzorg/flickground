@@ -13,3 +13,13 @@ Config example
 (* flickgroundrc *)
 
 users: 48404998@N08
+
+
+
+Depandancies
+===========
+
+* lwt
+* ocsigenserver 
+* re.str
+* yojson
